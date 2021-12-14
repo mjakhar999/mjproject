@@ -10,9 +10,14 @@ from django.urls import reverse
 import secrets
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
+# from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .form import UserRegisterForm
+from .models import Token
 # Create your views here.
 
 
@@ -21,7 +26,7 @@ def genrate_code():
     code = secrets.token_urlsafe(nbytes=4)
     return code
 
-def register(request):
+def register_page(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
@@ -34,39 +39,9 @@ def register(request):
         form = UserRegisterForm()
     return render(request, "blog/register.html",{"form":form})
 
-# def login(request):
-#     if request.method == "POST":
-#         form = LoginForm(request.POST)
-#         if form.is_valid():
-#             try:
-#                 user = Persons.objects.get(username=form.cleaned_data['username'])  
-#             except:
-#                 messages.warning(request,"user is not registered, please regitser!!")
-#                 return redirect('login')            
-  
-#             if check_password(form.cleaned_data['password'],user.password) and user is not None:
-#                 token = secrets.token_hex(10)
-#                 token = str(token)
-#                 request.session['user'] = user.username
-#                 request.session['email'] = user.email
-
-#                 response = HttpResponseRedirect('home') 
-#                 response.set_cookie("token", token)
-#                 return response
-#             else:
-#                   return render(request, 'workout/login.html', {
-#                     'form': form,
-#                     'error_message': 'Passwords do not match'
-#                 })               
-#     else:
-#         form = LoginForm()
-#     return render(request,'workout/login.html',{'form':form})
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-import json
-
 @method_decorator(csrf_exempt , name='dispatch')    
 def login_user(request):
+    
     if request.method =="POST":
         
         if request.body:
@@ -83,7 +58,7 @@ def login_user(request):
                 Token.objects.create(token=code, user= user).save()
                 # request.session['id'] = user.id
                 login(request,user)
-                response = HttpResponseRedirect('home')
+                response = HttpResponseRedirect('blog/')
                 response.set_cookie(key='token',value=code)
                 return response
             else:
