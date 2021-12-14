@@ -16,7 +16,7 @@ My Stored Posts
     {% endif %}
     <ul>
       {% for post in posts %}
-        <li><a href="{% url "post-detail-page" post.slug %}">{{ post.title }}</a></li>
+        <li><a href="{% url "blog:post-detail-page" post.slug %}">{{ post.title }}</a></li>
       {% endfor %}
     </ul>
   </section>
